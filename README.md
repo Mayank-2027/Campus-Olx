@@ -1,6 +1,6 @@
 # CampusOLX
 
-> 🎓 The trusted marketplace built exclusively for IET Lucknow students
+> 🎓 The trusted marketplace built exclusively for JEC students
 
 ## 🚀 Quick Start
 
@@ -78,4 +78,4 @@ Campus-Olx/
 
 ## 📧 College Domain
 
-Change `COLLEGE_DOMAIN` in `server/.env` to your college email domain.
+
