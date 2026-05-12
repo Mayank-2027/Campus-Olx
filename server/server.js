@@ -58,9 +58,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── Session ──────────────────────────────────────────────────────────────────
 app.use(session({
+    name: 'campus_olx.sid',
     secret: process.env.SESSION_SECRET || 'campus-olx-secret',
     resave: false,
     saveUninitialized: false,
+    proxy: process.env.NODE_ENV === 'production',
     store: MongoStore.create({
         mongoUrl: process.env.MONGODB_URI,
         ttl: 24 * 60 * 60 // 1 day

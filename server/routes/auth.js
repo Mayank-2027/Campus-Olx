@@ -5,6 +5,12 @@ const router = express.Router();
 const { isAuthenticated } = require('../middleware/auth');
 const { CLIENT_URL } = require('../config/urls');
 
+const sessionCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+};
+
 // ─── Google OAuth ─────────────────────────────────────────────────────────────
 
 // Initiate Google OAuth
@@ -57,7 +63,7 @@ router.post('/logout', (req, res) => {
             return res.status(500).json({ success: false, message: 'Logout failed' });
         }
         req.session.destroy(() => {
-            res.clearCookie('connect.sid');
+            res.clearCookie('campus_olx.sid', sessionCookieOptions);
             res.json({ success: true, message: 'Logged out successfully' });
         });
     });
