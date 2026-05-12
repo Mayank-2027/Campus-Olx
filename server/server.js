@@ -26,6 +26,10 @@ const uploadRoutes = require('./routes/upload');
 const app = express();
 const server = http.createServer(app);
 
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
+
 // Initialize socket.io
 initSocket(server);
 
@@ -63,6 +67,7 @@ app.use(session({
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
