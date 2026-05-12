@@ -97,6 +97,7 @@ export const adminAPI = {
     // Verifications
     getVerifications: () => API.get('/admin/verifications'),
     getVerificationPhoto: (id) => `${HOST_URL}/api/admin/verifications/${id}/photo?token=${localStorage.getItem('token')}`,
+    getVerificationPhotoBlob: (id) => API.get(`/admin/verifications/${id}/photo`, { responseType: 'blob' }),
     approveVerification: (id) => API.post(`/admin/verifications/${id}/approve`),
     rejectVerification: (id, reason) => API.post(`/admin/verifications/${id}/reject`, { reason }),
     // Reports

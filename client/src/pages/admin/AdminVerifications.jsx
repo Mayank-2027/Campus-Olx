@@ -13,6 +13,8 @@ const AdminVerifications = () => {
     const [rejectModal, setRejectModal] = useState(null);
     const [rejectReason, setRejectReason] = useState('Photo not clear');
     const [actionLoading, setActionLoading] = useState(false);
+    const [idPhotoUrl, setIdPhotoUrl] = useState(null);
+    const [photoLoading, setPhotoLoading] = useState(false);
 
     useEffect(() => { fetchVerifications(); }, []);
 
@@ -23,6 +25,29 @@ const AdminVerifications = () => {
             setVerifications(data.verifications);
         } catch { } finally { setLoading(false); }
     };
+
+    const fetchIdPhoto = async (id) => {
+        setPhotoLoading(true);
+        setIdPhotoUrl(null);
+        try {
+            const response = await adminAPI.getVerificationPhotoBlob(id);
+            const url = URL.createObjectURL(response.data);
+            setIdPhotoUrl(url);
+        } catch (err) {
+            toast.error('Failed to load ID photo');
+        } finally {
+            setPhotoLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (photoModal) {
+            fetchIdPhoto(photoModal._id);
+        }
+        return () => {
+            if (idPhotoUrl) URL.revokeObjectURL(idPhotoUrl);
+        };
+    }, [photoModal]);
 
     const handleApprove = async (id) => {
         setActionLoading(true);
@@ -132,13 +157,24 @@ const AdminVerifications = () => {
                             <button onClick={() => setPhotoModal(null)}><X size={20} className="text-gray-400" /></button>
                         </div>
 
-                        <div className="bg-gray-50 rounded-xl p-2 mb-4">
-                            <img
-                                src={adminAPI.getVerificationPhoto(photoModal._id)}
-                                alt="ID Card"
-                                className="w-full rounded-lg object-contain max-h-80"
-                                onError={e => { e.target.alt = 'Photo not available or already deleted'; }}
-                            />
+                        <div className="bg-gray-50 rounded-xl p-2 mb-4 relative min-h-[200px] flex items-center justify-center">
+                            {photoLoading ? (
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="text-xs text-gray-500 font-medium">Loading ID Photo...</p>
+                                </div>
+                            ) : idPhotoUrl ? (
+                                <img
+                                    src={idPhotoUrl}
+                                    alt="ID Card"
+                                    className="w-full rounded-lg object-contain max-h-80 shadow-sm"
+                                />
+                            ) : (
+                                <div className="text-center p-8">
+                                    <XCircle size={32} className="text-red-300 mx-auto mb-2" />
+                                    <p className="text-sm text-gray-500">Failed to load photo or already deleted</p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600 mb-4">

@@ -87,10 +87,23 @@ exports.getPendingVerifications = async (_req, res) => {
 exports.getVerificationPhoto = async (req, res) => {
     try {
         const verification = await Verification.findById(req.params.id);
-        if (!verification) return res.status(404).json({ success: false, message: 'Not found' });
-        res.sendFile(path.resolve(verification.tempPhotoPath));
-    } catch {
-        res.status(500).json({ success: false, message: 'Server error' });
+        if (!verification) {
+            return res.status(404).json({ success: false, message: 'Verification record not found' });
+        }
+
+        const filePath = path.resolve(verification.tempPhotoPath);
+        
+        // Check if file exists on disk
+        const fs = require('fs');
+        if (!fs.existsSync(filePath)) {
+            console.error(`❌ Verification photo not found at path: ${filePath}`);
+            return res.status(404).json({ success: false, message: 'Photo file not found on server. It may have been deleted.' });
+        }
+
+        res.sendFile(filePath);
+    } catch (err) {
+        console.error('Error fetching verification photo:', err);
+        res.status(500).json({ success: false, message: 'Server error while fetching photo' });
     }
 };
 
