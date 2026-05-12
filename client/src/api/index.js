@@ -1,11 +1,8 @@
 import axios from 'axios';
 
-let BASE_URL = import.meta.env.VITE_API_URL || '/api';
-
-// Robustness: ensure full URLs end with /api
-if (BASE_URL.startsWith('http') && !BASE_URL.endsWith('/api')) {
-    BASE_URL = `${BASE_URL.replace(/\/$/, '')}/api`;
-}
+let BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    'https://campus-olx-13aq.onrender.com/api';
 
 // Strip trailing /api to get the root host URL
 const HOST_URL = BASE_URL.replace(/\/api$/, '');
