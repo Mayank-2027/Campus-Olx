@@ -1,7 +1,13 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
-// Strip trailing /api if present so we don't double up
+let BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+// Robustness: ensure full URLs end with /api
+if (BASE_URL.startsWith('http') && !BASE_URL.endsWith('/api')) {
+    BASE_URL = `${BASE_URL.replace(/\/$/, '')}/api`;
+}
+
+// Strip trailing /api to get the root host URL
 const HOST_URL = BASE_URL.replace(/\/api$/, '');
 
 const API = axios.create({

@@ -58,6 +58,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+// ─── My listings ───────────────────────────────────────────────────────────────
+router.get('/seller/my-listings', isAuthenticated, async (req, res) => {
+    try {
+        const { status } = req.query;
+        const filter = { sellerId: req.user._id };
+        if (status) filter.status = status;
+        const products = await Product.find(filter).sort({ createdAt: -1 });
+        res.json({ success: true, products });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // ─── Get single product ────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
     try {
@@ -152,19 +165,6 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
         }
         await Product.findByIdAndDelete(req.params.id);
         res.json({ success: true, message: 'Listing deleted' });
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
-
-// ─── My listings ───────────────────────────────────────────────────────────────
-router.get('/seller/my-listings', isAuthenticated, async (req, res) => {
-    try {
-        const { status } = req.query;
-        const filter = { sellerId: req.user._id };
-        if (status) filter.status = status;
-        const products = await Product.find(filter).sort({ createdAt: -1 });
-        res.json({ success: true, products });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server error' });
     }
