@@ -56,9 +56,11 @@ export const AuthProvider = ({ children }) => {
 
     const checkAuth = async () => {
         try {
-            const { data } = await authAPI.getMe();
-            if (data.success) {
+            const { data } = await authAPI.status();
+            if (data.isAuthenticated && data.user) {
                 setUser(data.user);
+            } else {
+                setUser(null);
             }
         } catch (err) {
             setUser(null);

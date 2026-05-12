@@ -73,12 +73,30 @@ router.post('/logout', (req, res) => {
 router.get('/status', (req, res) => {
     if (req.isAuthenticated && req.isAuthenticated()) {
         return res.json({
+            success: true,
             isAuthenticated: true,
             isProfileComplete: req.user.isProfileComplete,
-            isAdmin: req.user.isAdmin
+            isAdmin: req.user.isAdmin,
+            user: {
+                _id: req.user._id,
+                name: req.user.name,
+                email: req.user.email,
+                profilePic: req.user.profilePic,
+                enrollmentNo: req.user.enrollmentNo,
+                year: req.user.year,
+                branch: req.user.branch,
+                branchFull: req.user.branchFull,
+                joiningYear: req.user.joiningYear,
+                isProfileComplete: req.user.isProfileComplete,
+                isVerifiedSeller: req.user.isVerifiedSeller,
+                verificationStatus: req.user.verificationStatus,
+                isAdmin: req.user.isAdmin,
+                isBanned: req.user.isBanned,
+                createdAt: req.user.createdAt
+            }
         });
     }
-    res.json({ isAuthenticated: false });
+    res.json({ success: true, isAuthenticated: false });
 });
 
 module.exports = router;
