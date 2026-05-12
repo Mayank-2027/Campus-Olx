@@ -9,13 +9,18 @@ const HOST_URL = BASE_URL.replace(/\/api$/, '');
 
 const API = axios.create({
     baseURL: BASE_URL,
-    withCredentials: true,
     timeout: 15000,
 });
 
-// Request interceptor
+// Request interceptor: Attach JWT token
 API.interceptors.request.use(
-    (config) => config,
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
     (error) => Promise.reject(error)
 );
 
@@ -23,11 +28,15 @@ API.interceptors.request.use(
 API.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (
-            error.response?.status === 401 &&
-            !window.location.pathname.includes('/login')
-        ) {
-            window.location.href = '/login';
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+            // Only redirect if NOT on a public page or NOT checking initial status
+            const isPublicPage = window.location.pathname === '/' || window.location.pathname === '/login';
+            const isStatusCheck = error.config.url.includes('/auth/status');
+            
+            if (!isPublicPage && !isStatusCheck) {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

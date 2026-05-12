@@ -4,8 +4,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const path = require('path');
 require('dotenv').config();
@@ -56,29 +54,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ─── Static Files (temp uploads) ─────────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ─── Session ──────────────────────────────────────────────────────────────────
-app.use(session({
-    name: 'campus_olx.sid',
-    secret: process.env.SESSION_SECRET || 'campus-olx-secret',
-    resave: false,
-    saveUninitialized: false,
-    proxy: process.env.NODE_ENV === 'production',
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI,
-        ttl: 24 * 60 * 60 // 1 day
-    }),
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
-    }
-}));
-
 // ─── Passport ────────────────────────────────────────────────────────────────
 require('./middleware/passport')(passport);
 app.use(passport.initialize());
-app.use(passport.session());
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

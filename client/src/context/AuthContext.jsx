@@ -13,7 +13,11 @@ export const AuthProvider = ({ children }) => {
 
     // Fetch current user on mount
     useEffect(() => {
-        checkAuth();
+        if (localStorage.getItem('token')) {
+            checkAuth();
+        } else {
+            setLoading(false);
+        }
     }, []);
 
     // Initialize socket when user is authenticated
@@ -81,6 +85,7 @@ export const AuthProvider = ({ children }) => {
                 socketRef.current = null;
                 setSocket(null);
             }
+            localStorage.removeItem('token');
             setUser(null);
             window.location.href = '/';
         } catch (err) {

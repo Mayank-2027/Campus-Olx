@@ -19,6 +19,7 @@ import ReportFound from './pages/ReportFound';
 import Chats from './pages/Chats';
 import ChatDetail from './pages/ChatDetail';
 import Profile from './pages/Profile';
+import LoginSuccess from './pages/LoginSuccess';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -71,6 +72,7 @@ const AppRoutes = () => {
                     <Route path="/marketplace/category/:cat" element={<Marketplace />} />
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="/lost-found" element={<LostFound />} />
+                    <Route path="/login-success" element={<LoginSuccess />} />
 
                     {/* Profile completion (authenticated but no profile) */}
                     <Route path="/complete-profile" element={
