@@ -19,9 +19,13 @@ export const AuthProvider = ({ children }) => {
     // Initialize socket when user is authenticated
     useEffect(() => {
         if (user && !socketRef.current) {
-            const newSocket = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, {
-                withCredentials: true
-            });
+            const newSocket = io(
+                import.meta.env.VITE_SOCKET_URL ||
+                'https://campus-olx-13aq.onrender.com',
+                {
+                    withCredentials: true
+                }
+            );
 
             newSocket.on('connect', () => {
                 newSocket.emit('join', user._id);

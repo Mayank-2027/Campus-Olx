@@ -23,7 +23,10 @@ API.interceptors.request.use(
 API.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401 && !error.config.url.includes('/auth/me')) {
+        if (
+            error.response?.status === 401 &&
+            !window.location.pathname.includes('/login')
+        ) {
             window.location.href = '/login';
         }
         return Promise.reject(error);
