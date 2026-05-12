@@ -121,4 +121,9 @@ export const adminAPI = {
     }),
 };
 
+// ─── Public ──────────────────────────────────────────────────────────────────
+export const publicAPI = {
+    getStats: () => API.get('/public-stats')
+};
+
 export default API;

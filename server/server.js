@@ -21,6 +21,7 @@ const reportRoutes = require('./routes/reports');
 const lostFoundRoutes = require('./routes/lostFound');
 const adminRoutes = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
+const publicRoutes = require('./routes/public');
 
 const app = express();
 const server = http.createServer(app);
@@ -67,6 +68,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/lost-found', lostFoundRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api', publicRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

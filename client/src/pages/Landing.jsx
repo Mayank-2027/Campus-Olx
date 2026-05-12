@@ -8,6 +8,7 @@ import {
     MapPin, Star, CheckCircle, ChevronLeft, ChevronRight,
     Lock, Bell, Flag, UserCheck
 } from 'lucide-react';
+import { publicAPI } from '../api';
 
 const CATEGORIES = [
     { name: 'Books', emoji: '📚', desc: 'Textbooks, novels, guides', color: 'bg-amber-50 border-amber-200 hover:bg-amber-100' },
@@ -42,6 +43,24 @@ const Landing = () => {
 
     const [isVisible, setIsVisible] = useState({});
     const intervalRef = useRef(null);
+
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    // Fetch stats on mount
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const { data } = await publicAPI.getStats();
+                setStats(data.stats);
+            } catch (error) {
+                console.error('Failed to load stats');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
 
     // Auto-slide testimonials
     useEffect(() => {
@@ -278,19 +297,46 @@ const Landing = () => {
             {/* ── STATS BANNER ────────────────────────────────────────────────── */}
             <section className="py-16 bg-indigo-600">
                 <div className="max-w-6xl mx-auto px-4">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center text-white">
-                        {[
-                            { value: '500+', label: 'Active Students' },
-                            { value: '1000+', label: 'Items Listed' },
-                            { value: '50+', label: 'Successful Trades' },
-                            { value: '₹0', label: 'Fees Charged' },
-                        ].map((stat, i) => (
-                            <div key={i}>
-                                <div className="text-4xl font-black mb-1">{stat.value}</div>
-                                <div className="text-indigo-200 text-sm font-medium">{stat.label}</div>
-                            </div>
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                            {[1, 2, 3, 4].map(i => (
+                                <div
+                                    key={i}
+                                    className="h-20 rounded-xl bg-indigo-500 animate-pulse"
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center text-white">
+                            {[
+                                {
+                                    value: `${stats?.users || 0}+`,
+                                    label: 'Active Students'
+                                },
+                                {
+                                    value: `${stats?.listings || 0}+`,
+                                    label: 'Items Listed'
+                                },
+                                {
+                                    value: `${stats?.trades || 0}+`,
+                                    label: 'Successful Trades'
+                                },
+                                {
+                                    value: '₹0',
+                                    label: 'Fees Charged'
+                                },
+                            ].map((stat, i) => (
+                                <div key={i}>
+                                    <div className="text-4xl font-black mb-1">
+                                        {stat.value}
+                                    </div>
+                                    <div className="text-indigo-200 text-sm font-medium">
+                                        {stat.label}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
