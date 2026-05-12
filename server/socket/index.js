@@ -1,4 +1,5 @@
 const { Server } = require('socket.io');
+const { CLIENT_URL } = require('../config/urls');
 
 let io;
 const onlineUsers = new Map(); // userId -> socketId
@@ -6,7 +7,7 @@ const onlineUsers = new Map(); // userId -> socketId
 const initSocket = (server) => {
     io = new Server(server, {
         cors: {
-            origin: process.env.CLIENT_URL || 'http://localhost:5173',
+            origin: CLIENT_URL,
             methods: ['GET', 'POST'],
             credentials: true
         }

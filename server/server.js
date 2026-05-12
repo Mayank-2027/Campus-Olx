@@ -9,6 +9,7 @@ const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const path = require('path');
 require('dotenv').config();
+const { BASE_URL, CLIENT_URL } = require('./config/urls');
 
 // Import socket handler
 const initSocket = require('./socket/index');
@@ -42,7 +43,7 @@ app.use(compression());
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -109,7 +110,7 @@ mongoose.connect(process.env.MONGODB_URI)
         console.log('✅ MongoDB connected successfully');
         server.listen(PORT,() => {
             console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`📡 API available at http://localhost:${PORT}/api`);
+            console.log(`📡 API available at ${BASE_URL}/api`);
         });
     })
     .catch(err => {

@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     // Initialize socket when user is authenticated
     useEffect(() => {
         if (user && !socketRef.current) {
-            const newSocket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+            const newSocket = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, {
                 withCredentials: true
             });
 

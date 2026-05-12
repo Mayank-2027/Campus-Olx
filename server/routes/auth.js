@@ -3,6 +3,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const { isAuthenticated } = require('../middleware/auth');
+const { CLIENT_URL } = require('../config/urls');
 
 // ─── Google OAuth ─────────────────────────────────────────────────────────────
 
@@ -14,14 +15,14 @@ router.get('/google', passport.authenticate('google', {
 // Google OAuth callback
 router.get('/google/callback',
     passport.authenticate('google', {
-        failureRedirect: `${process.env.CLIENT_URL}/login?error=domain_mismatch`
+        failureRedirect: `${CLIENT_URL}/login?error=domain_mismatch`
     }),
     (req, res) => {
         // Check if profile is complete
         if (!req.user.isProfileComplete) {
-            return res.redirect(`${process.env.CLIENT_URL}/complete-profile`);
+            return res.redirect(`${CLIENT_URL}/complete-profile`);
         }
-        res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        res.redirect(`${CLIENT_URL}/dashboard`);
     }
 );
 
