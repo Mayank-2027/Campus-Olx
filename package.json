@@ -1,0 +1,16 @@
+{
+    "name": "campus-olx",
+    "version": "1.0.0",
+    "description": "Campus OLX - College Marketplace",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+        "dev:server": "cd server && npm run dev",
+        "dev:client": "cd client && npm run dev",
+        "install:all": "cd server && npm install && cd ../client && npm install",
+        "build": "cd client && npm run build"
+    },
+    "private": true,
+    "devDependencies": {
+        "concurrently": "^9.2.1"
+    }
+}
