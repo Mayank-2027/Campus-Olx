@@ -1,0 +1,221 @@
+version: '3.8'
+
+services:
+  # ─── Databases & Infrastructure Services ──────────────────────────────────────
+  mongodb:
+    image: mongo:6.0
+    container_name: campusolx-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - campus-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: campusolx-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - campus-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: campusolx-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"    # AMQP protocol
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - campus-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Microservices ────────────────────────────────────────────────────────────
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/shared/Dockerfile
+      args:
+        SERVICE_ENTRY: services/auth-service/index.js
+    container_name: campusolx-auth-service
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - AUTH_SERVICE_PORT=5001
+      - MONGODB_URI=mongodb://mongodb:27017/campusolx
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - JWT_SECRET=campus_olx_super_secret_jwt_key_2026
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - campus-network
+
+  product-service:
+    build:
+      context: .
+      dockerfile: services/shared/Dockerfile
+      args:
+        SERVICE_ENTRY: services/product-service/index.js
+    container_name: campusolx-product-service
+    restart: always
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - PRODUCT_SERVICE_PORT=5002
+      - MONGODB_URI=mongodb://mongodb:27017/campusolx
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - JWT_SECRET=campus_olx_super_secret_jwt_key_2026
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - campus-network
+
+  chat-service:
+    build:
+      context: .
+      dockerfile: services/shared/Dockerfile
+      args:
+        SERVICE_ENTRY: services/chat-service/index.js
+    container_name: campusolx-chat-service
+    restart: always
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - CHAT_SERVICE_PORT=5003
+      - MONGODB_URI=mongodb://mongodb:27017/campusolx
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - JWT_SECRET=campus_olx_super_secret_jwt_key_2026
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - campus-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/shared/Dockerfile
+      args:
+        SERVICE_ENTRY: services/notification-service/index.js
+    container_name: campusolx-notification-service
+    restart: always
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - NOTIFICATION_SERVICE_PORT=5004
+      - MONGODB_URI=mongodb://mongodb:27017/campusolx
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - JWT_SECRET=campus_olx_super_secret_jwt_key_2026
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - campus-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/shared/Dockerfile
+      args:
+        SERVICE_ENTRY: services/api-gateway/index.js
+    container_name: campusolx-api-gateway
+    restart: always
+    ports:
+      - "5005:5000"
+    environment:
+      - PORT=5000
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - PRODUCT_SERVICE_URL=http://product-service:5002
+      - CHAT_SERVICE_URL=http://chat-service:5003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5004
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      - auth-service
+      - product-service
+      - chat-service
+      - notification-service
+    networks:
+      - campus-network
+
+  # ─── Frontend Web Client ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: campusolx-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - campus-network
+
+networks:
+  campus-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  redis_data:
+  rabbitmq_data:

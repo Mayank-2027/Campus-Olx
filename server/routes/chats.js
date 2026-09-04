@@ -132,6 +132,16 @@ router.post('/:chatId/messages', isAuthenticated, async (req, res) => {
             io.to(`chat_${req.params.chatId}`).emit('newMessage', newMessage);
         }
 
+        // Publish MESSAGE_SENT event to RabbitMQ for offline notification processing
+        const { publishEvent } = require('../../services/shared/config/rabbitmq');
+        publishEvent('MESSAGE_SENT', {
+            chatId: req.params.chatId,
+            senderId: req.user._id,
+            messageId: newMessage._id,
+            message: newMessage.message,
+            timestamp: newMessage.createdAt
+        }).catch(err => console.error('RabbitMQ publish error:', err));
+
         res.status(201).json({ success: true, message: newMessage });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server error' });
