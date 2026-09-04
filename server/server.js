@@ -11,6 +11,8 @@ const { BASE_URL, CLIENT_URL } = require('./config/urls');
 
 // Import socket handler
 const initSocket = require('./socket/index');
+const { getIO } = require('./socket/index');
+const { setupNotificationHandlers } = require('./notifications/eventHandlers');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -22,6 +24,7 @@ const lostFoundRoutes = require('./routes/lostFound');
 const adminRoutes = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
 const publicRoutes = require('./routes/public');
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 const server = http.createServer(app);
@@ -68,6 +71,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/lost-found', lostFoundRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api', publicRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
@@ -88,12 +92,14 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
+    .then(async () => {
         console.log('✅ MongoDB connected successfully');
-        server.listen(PORT,() => {
+        server.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`📡 API available at ${BASE_URL}/api`);
         });
+        // Start notification event handlers (RabbitMQ subscribers + socket emit)
+        await setupNotificationHandlers(getIO);
     })
     .catch(err => {
         console.error('❌ MongoDB connection error:', err);
