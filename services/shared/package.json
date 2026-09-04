@@ -1,0 +1,12 @@
+{
+  "name": "campus-olx-shared",
+  "version": "1.0.0",
+  "description": "Shared utilities for Campus OLX services",
+  "private": true,
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "ioredis": "^5.11.1",
+    "morgan": "^1.10.0",
+    "winston": "^3.13.0"
+  }
+}
