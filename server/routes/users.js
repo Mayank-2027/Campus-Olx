@@ -58,6 +58,15 @@ router.post('/complete-profile', isAuthenticated, async (req, res) => {
             { new: true }
         );
 
+        const { publishEvent } = require('../../services/shared/config/rabbitmq');
+        publishEvent('USER_REGISTERED', {
+            userId: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            enrollmentNo: updatedUser.enrollmentNo,
+            branchFull: updatedUser.branchFull
+        }).catch(err => console.error('RabbitMQ publish error:', err));
+
         res.json({
             success: true,
             message: 'Profile completed successfully!',
