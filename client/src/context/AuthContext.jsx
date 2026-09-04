@@ -49,6 +49,23 @@ export const AuthProvider = ({ children }) => {
                 checkAuth();
             });
 
+            // Handle general notifications from server
+            newSocket.on('newNotification', (data) => {
+                console.log('[FRONTEND DEBUG] 🔔 newNotification received via socket:', data);
+                toast(data.message || data.title, {
+                    icon: '🔔',
+                    duration: 5000,
+                });
+            });
+
+            newSocket.on('disconnect', () => {
+                console.log('[FRONTEND DEBUG] Socket disconnected');
+            });
+
+            newSocket.on('connect_error', (err) => {
+                console.error('[FRONTEND DEBUG] Socket connect error:', err.message);
+            });
+
             socketRef.current = newSocket;
             setSocket(newSocket);
         }

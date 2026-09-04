@@ -110,7 +110,10 @@ const setupEventSubscriptions = async () => {
     const queueName = 'notification_service_queue';
     const routingKeys = ['USER_REGISTERED', 'MESSAGE_SENT', 'PRODUCT_CREATED'];
 
+    console.log('[NOTIF DEBUG] Setting up RabbitMQ queue subscriptions for:', routingKeys);
+
     await subscribeQueue(queueName, routingKeys, async (eventData) => {
+        console.log('[NOTIF DEBUG] 📩 RabbitMQ message received! Event:', eventData.event, '| Data:', JSON.stringify(eventData.data));
         switch (eventData.event) {
             case 'USER_REGISTERED':
                 await handleUserRegistered(eventData);
@@ -124,6 +127,7 @@ const setupEventSubscriptions = async () => {
             default:
                 logger.warn(`Unknown event type received: ${eventData.event}`);
         }
+        console.log('[NOTIF DEBUG] ✅ Event processed:', eventData.event);
     });
 };
 

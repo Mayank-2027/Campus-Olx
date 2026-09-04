@@ -206,6 +206,7 @@ router.post('/', isAuthenticated, isProfileComplete, isVerifiedSeller,
             await invalidateProductCache();
 
             // 2. Publish PRODUCT_CREATED event to RabbitMQ
+            console.log('[DEBUG] Publishing PRODUCT_CREATED event to RabbitMQ. ProductId:', product._id);
             publishEvent('PRODUCT_CREATED', {
                 productId: product._id,
                 title: product.title,

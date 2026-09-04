@@ -21,7 +21,8 @@ const initSocket = (server) => {
             if (userId) {
                 onlineUsers.set(userId.toString(), socket.id);
                 socket.userId = userId.toString();
-                console.log(`👤 User ${userId} joined socket`);
+                socket.join(userId.toString()); // Join personal room
+                console.log(`👤 [SOCKET DEBUG] User ${userId} joined socket. SocketId: ${socket.id}. Online users: ${onlineUsers.size}`);
             }
         });
 
@@ -66,7 +67,10 @@ const initSocket = (server) => {
 // Notify all admins of a new verification request
 const notifyAdmins = (event, data) => {
     if (io) {
+        console.log(`📢 [SOCKET DEBUG] notifyAdmins() called. Event: "${event}". Data:`, JSON.stringify(data));
         io.to('admin_room').emit(event, data);
+    } else {
+        console.warn('[SOCKET DEBUG] notifyAdmins() called but io is not initialized!');
     }
 };
 
@@ -74,9 +78,15 @@ const notifyAdmins = (event, data) => {
 const notifyUser = (userId, event, data) => {
     if (io) {
         const socketId = onlineUsers.get(userId.toString());
+        console.log(`📢 [SOCKET DEBUG] notifyUser() called. UserId: ${userId}. Event: "${event}". SocketId found: ${socketId || 'NONE (user offline)'}. Online users map:`, [...onlineUsers.entries()]);
         if (socketId) {
+            console.log(`✅ [SOCKET DEBUG] Emitting "${event}" to socketId ${socketId}`);
             io.to(socketId).emit(event, data);
+        } else {
+            console.warn(`⚠️ [SOCKET DEBUG] User ${userId} is NOT in onlineUsers map. Notification NOT delivered.`);
         }
+    } else {
+        console.warn('[SOCKET DEBUG] notifyUser() called but io is not initialized!');
     }
 };
 
