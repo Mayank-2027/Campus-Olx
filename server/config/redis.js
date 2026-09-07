@@ -6,24 +6,22 @@ let isRedisConnected = false;
 const initRedis = () => {
     const redisUrl = process.env.REDIS_URL;
 
-    if (!redisUrl && process.env.NODE_ENV === 'production') {
-        console.warn('⚠️ REDIS_URL not provided. Redis caching disabled.');
+    if (!redisUrl) {
+        console.warn('⚠️ REDIS_URL not set. Redis caching disabled.');
         return null;
     }
 
-    const url = redisUrl || 'redis://127.0.0.1:6379';
-
     try {
-        redisClient = new Redis(url, {
-            maxRetriesPerRequest: 1,
+        redisClient = new Redis(redisUrl, {
             retryStrategy(times) {
                 if (times > 5) {
+                    console.warn('⚠️ Redis: max retries exceeded, will retry every 30s');
                     return 30000;
                 }
                 return Math.min(times * 500, 3000);
             },
-            lazyConnect: true,
-            enableOfflineQueue: false
+            lazyConnect: false,        // Connect immediately on init
+            enableOfflineQueue: false  // Don't queue commands when offline
         });
 
         redisClient.on('connect', () => {
@@ -33,21 +31,20 @@ const initRedis = () => {
 
         redisClient.on('ready', () => {
             isRedisConnected = true;
+            console.log('✅ Redis is ready');
         });
 
         redisClient.on('error', (err) => {
             isRedisConnected = false;
-            if (process.env.DEBUG_REDIS === 'true') {
-                console.warn('⚠️ Redis error:', err.message);
-            }
+            console.warn('⚠️ Redis error:', err.message);
         });
 
         redisClient.on('close', () => {
             isRedisConnected = false;
         });
 
-        redisClient.connect().catch((err) => {
-            console.warn('⚠️ Redis connection failed (cache will be bypassed):', err.message);
+        redisClient.on('reconnecting', () => {
+            console.log('🔄 Redis reconnecting...');
         });
 
         return redisClient;
@@ -58,10 +55,13 @@ const initRedis = () => {
 };
 
 const getRedisClient = () => redisClient;
-const isConnected = () => isRedisConnected && redisClient && redisClient.status === 'ready';
+
+// Use the boolean flag — avoids timing issues with .status string checks
+const isConnected = () => isRedisConnected && redisClient !== null;
 
 module.exports = {
     initRedis,
     getRedisClient,
     isConnected
 };
+

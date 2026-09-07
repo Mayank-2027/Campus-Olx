@@ -9,6 +9,11 @@ const path = require('path');
 require('dotenv').config();
 const { BASE_URL, CLIENT_URL } = require('./config/urls');
 
+// Import Redis & RabbitMQ managers
+const { initRedis } = require('./config/redis');
+const { initRabbitMQ } = require('./config/rabbitmq');
+const { startQueueConsumers } = require('./queues/consumer');
+
 // Import socket handler
 const initSocket = require('./socket/index');
 
@@ -74,11 +79,6 @@ app.use('/api', publicRoutes);
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Campus OLX API is running' });
 });
-
-// Import Redis & RabbitMQ managers
-const { initRedis } = require('./config/redis');
-const { initRabbitMQ } = require('./config/rabbitmq');
-const { startQueueConsumers } = require('./queues/consumer');
 
 // ─── Error Handler ────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
