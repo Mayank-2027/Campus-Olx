@@ -67,8 +67,7 @@ const productSchema = new mongoose.Schema({
         default: 0
     }
 }, {
-    timestamps: true,
-    autoIndex: false
+    timestamps: true
 });
 
 // Index for search and filtering

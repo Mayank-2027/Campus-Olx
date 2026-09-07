@@ -49,14 +49,6 @@ export const AuthProvider = ({ children }) => {
                 checkAuth();
             });
 
-            // Handle general notifications from server
-            newSocket.on('newNotification', (data) => {
-                toast(data.message || data.title, {
-                    icon: '🔔',
-                    duration: 5000,
-                });
-            });
-
             socketRef.current = newSocket;
             setSocket(newSocket);
         }
