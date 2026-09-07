@@ -18,7 +18,12 @@ const initRabbitMQ = async () => {
     }
 
     try {
-        connection = await amqp.connect(rabbitUrl);
+        // amqps:// needs TLS options, amqp:// works without
+        const connectOptions = rabbitUrl.startsWith('amqps')
+            ? { rejectUnauthorized: false }  // Required for cloud providers like CloudAMQP
+            : {};
+
+        connection = await amqp.connect(rabbitUrl, connectOptions);
         channel = await connection.createChannel();
 
         // Assert queues are durable so they survive RabbitMQ restarts
