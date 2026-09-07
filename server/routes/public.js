@@ -2,9 +2,15 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Product = require('../models/Product');
+const { getCache, setCache } = require('../utils/cache');
 
 router.get('/public-stats', async (req, res) => {
     try {
+        const cachedStats = await getCache('public:stats');
+        if (cachedStats) {
+            return res.json({ success: true, stats: cachedStats, source: 'cache' });
+        }
+
         const users = await User.countDocuments();
         const listings = await Product.countDocuments({
             status: 'available',
@@ -14,14 +20,19 @@ router.get('/public-stats', async (req, res) => {
             status: 'sold'
         });
 
+        const stats = {
+            users,
+            listings,
+            trades,
+            fees: 0
+        };
+
+        // Cache landing stats for 10 minutes (600 seconds)
+        await setCache('public:stats', stats, 600);
+
         res.json({
             success: true,
-            stats: {
-                users,
-                listings,
-                trades,
-                fees: 0
-            }
+            stats
         });
     } catch (error) {
         console.error('Stats Error:', error);
@@ -33,3 +44,4 @@ router.get('/public-stats', async (req, res) => {
 });
 
 module.exports = router;
+

@@ -132,6 +132,22 @@ router.post('/:chatId/messages', isAuthenticated, async (req, res) => {
             io.to(`chat_${req.params.chatId}`).emit('newMessage', newMessage);
         }
 
+        // Asynchronously publish notification to RabbitMQ for recipient
+        const recipientId = chat.participants.find(p => p.toString() !== req.user._id.toString());
+        if (recipientId) {
+            const { publishNotification } = require('../queues/publisher');
+            publishNotification({
+                type: 'NEW_MESSAGE',
+                recipientId: recipientId.toString(),
+                event: 'chat_notification',
+                payload: {
+                    chatId: req.params.chatId,
+                    senderName: req.user.name,
+                    message: message.trim().substring(0, 60)
+                }
+            });
+        }
+
         res.status(201).json({ success: true, message: newMessage });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server error' });
