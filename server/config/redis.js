@@ -12,7 +12,14 @@ const initRedis = () => {
     }
 
     try {
+        // rediss:// = TLS (cloud providers like Upstash, Redis.io, Redis Cloud)
+        // redis://  = no TLS (local)
+        const tlsOptions = redisUrl.startsWith('rediss://')
+            ? { tls: { rejectUnauthorized: false } }
+            : {};
+
         redisClient = new Redis(redisUrl, {
+            ...tlsOptions,
             retryStrategy(times) {
                 if (times > 5) {
                     console.warn('⚠️ Redis: max retries exceeded, will retry every 30s');
@@ -20,8 +27,8 @@ const initRedis = () => {
                 }
                 return Math.min(times * 500, 3000);
             },
-            lazyConnect: false,        // Connect immediately on init
-            enableOfflineQueue: false  // Don't queue commands when offline
+            lazyConnect: false,
+            enableOfflineQueue: false
         });
 
         redisClient.on('connect', () => {
